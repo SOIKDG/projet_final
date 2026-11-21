@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestion des Permissions d'Absence et Congés Administratifs</title>
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-beige: #f4ede4;
+      --surface-ivory: #fcf9f5;
+      --surface-cream: #efe5d8;
+      --brown-dark: #3e2723;
+      --brown-medium: #5d4037;
+      --caramel: #8d6e63;
+      --taupe: #bcaaa4;
+      --accent-gold: #a47148;
+      --accent-gold-hover: #855834;
+      --danger: #9e2a2b;
+      --danger-hover: #7a1f20;
+      --success: #386641;
+      --border-color: #d7ccc8;
+      --shadow: 0 4px 14px rgba(62, 39, 35, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-beige);
+      color: var(--brown-dark);
+      line-height: 1.55;
+      padding: clamp(12px, 3vw, 24px);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Icônes SVG intégrées */
+    .ui-icon {
+      width: 1em;
+      height: 1em;
+      flex-shrink: 0;
+      display: inline-block;
+      vertical-align: -0.14em;
+    }
+
+    .title-with-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-with-icon .ui-icon {
+      width: 1.15em;
+      height: 1.15em;
+      color: var(--accent-gold);
+    }
+
+    /* En-tête de l'application */
+    .app-header {
+      background: linear-gradient(135deg, var(--brown-dark), var(--brown-medium));
+      color: var(--surface-ivory);
+      padding: clamp(14px, 2.5vw, 20px) clamp(16px, 3vw, 28px);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .app-header h1 {
+      font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+
+    .app-header p {
+      font-size: clamp(0.82rem, 1.5vw, 0.9rem);
+      color: var(--surface-cream);
+      opacity: 0.92;
+      margin-bottom: 0;
+    }
+
+    /* Conteneur principal */
+    .main-grid {
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      flex: 1 0 auto;
+    }
+
+    /* Cartes */
+    .card {
+      background-color: var(--surface-ivory);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: clamp(16px, 2.5vw, 24px);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+      font-weight: 700;
+      color: var(--brown-dark);
+      border-bottom: 2px solid var(--surface-cream);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Boutons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 7px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--brown-dark);
+      color: var(--surface-ivory);
+    }
+    .btn-primary:hover,
+    .btn-primary:focus {
+      background-color: var(--brown-medium);
+      color: var(--surface-ivory);
+    }
+
+    .btn-accent {
+      background-color: var(--accent-gold);
+      color: #fff;
+    }
+    .btn-accent:hover,
+    .btn-accent:focus {
+      background-color: var(--accent-gold-hover);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background-color: var(--surface-cream);
+      color: var(--brown-dark);
+      border-color: var(--taupe);
+    }
+    .btn-outline:hover,
+    .btn-outline:focus {
+      background-color: #e4d5c3;
+      color: var(--brown-dark);
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: #fff;
+    }
+    .btn-danger:hover,
+    .btn-danger:focus {
+      background-color: var(--danger-hover);
+      color: #fff;
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.82rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    /* Panneaux rétractables (Ajout / Suppression agent) */
+    .drawer-panel {
+      display: none;
+      background-color: var(--surface-cream);
+      border: 1px solid var(--taupe);
+      border-radius: 9px;
+      padding: 16px;
+      margin-bottom: 16px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .drawer-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .drawer-panel h3 {
+      font-size: 0.98rem;
+      margin-bottom: 12px;
+      color: var(--brown-dark);
+    }
+
+    /* Formulaires */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--brown-medium);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--taupe);
+      border-radius: 7px;
+      background-color: #fff;
+      color: var(--brown-dark);
+      font-size: 0.92rem;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 0 3px rgba(164, 113, 72, 0.15);
+    }
+
+    input[readonly] {
+      background-color: var(--surface-cream);
+      font-weight: 600;
+      color: var(--brown-dark);
+    }
+
+    /* Badges et alertes */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .badge-permission {
+      background-color: #e6ccb2;
+      color: #432818;
+      border: 1px solid #ddb892;
+    }
+
+    .badge-conge {
+      background-color: #5d4037;
+      color: #fcf9f5;
+    }
+
+    .status-msg {
+      font-size: 0.84rem;
+      margin-top: 6px;
+      font-weight: 600;
+      display: block;
+    }
+    .status-ok { color: var(--success); }
+    .status-warn { color: var(--danger); }
+
+    .pdf-box {
+      display: none;
+      background-color: #f9efe6;
+      border: 1.5px dashed var(--accent-gold);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 4px;
+    }
+    .pdf-box.visible {
+      display: block;
+    }
+
+    /* Aperçu du document officiel */
+    .preview-wrapper {
+      background-color: #e8ded1;
+      padding: clamp(12px, 2.2vw, 22px);
+      border-radius: 10px;
+      border: 1px solid var(--taupe);
+      overflow-x: auto;
+    }
+
+    .document-sheet {
+      background-color: #ffffff;
+      color: #1a1a1a;
+      padding: clamp(24px, 4vw, 44px) clamp(20px, 4vw, 44px);
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+      font-family: "Times New Roman", Times, Georgia, serif;
+      min-height: 540px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 14px 20px;
+      margin-bottom: 24px;
+      padding-top: 4px;
+      width: 100%;
+    }
+
+    .doc-admin-header {
+      font-size: clamp(0.78rem, 1.35vw, 0.9rem);
+      font-weight: bold;
+      text-transform: uppercase;
+      line-height: 1.35;
+      text-align: left;
+      flex: 1 1 220px;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .doc-meta-right {
+      text-align: left;
+      font-size: clamp(0.84rem, 1.4vw, 0.95rem);
+      line-height: 1.45;
+      flex: 0 0 auto;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    @media (min-width: 576px) {
+      .doc-meta-right {
+        text-align: right;
+        white-space: nowrap;
+      }
+    }
+
+    .doc-center-section {
+      margin: 18px 0 20px 0;
+      width: 100%;
+    }
+
+    .doc-title {
+      text-align: center;
+      font-size: clamp(1rem, 1.9vw, 1.2rem);
+      font-weight: bold;
+      text-decoration: underline;
+      text-transform: uppercase;
+      margin: 8px 0 22px 0;
+      letter-spacing: 0.5px;
+      overflow-wrap: anywhere;
+    }
+
+    .doc-body {
+      font-size: clamp(0.9rem, 1.5vw, 1.02rem);
+      line-height: 1.65;
+      text-align: left;
+      margin-bottom: 16px;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+    }
+
+    @media (min-width: 576px) {
+      .doc-body {
+        text-align: justify;
+      }
+    }
+
+    .doc-body.editing {
+      outline: 2px dashed var(--accent-gold);
+      background-color: #fffdf9;
+      padding: 12px;
+      border-radius: 4px;
+    }
+
+    .doc-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+      padding-bottom: 6px;
+      width: 100%;
+    }
+
+    .doc-signatory {
+      text-align: center;
+      min-width: 180px;
+      max-width: 100%;
+      font-size: clamp(0.9rem, 1.5vw, 1.02rem);
+      overflow-wrap: anywhere;
+    }
+
+    .doc-signatory-name {
+      margin-top: 44px;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    /* Tableau historique & liste agents */
+    .table-container {
+      overflow-x: auto;
+      max-height: 320px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.87rem;
+      background-color: #fff;
+      min-width: 440px;
+    }
+
+    th {
+      background-color: var(--surface-cream);
+      color: var(--brown-dark);
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      border-bottom: 1px solid var(--taupe);
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #eee4d8;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background-color: #faf5ef;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      color: var(--caramel);
+      font-style: italic;
+    }
+
+    /* Pied de page applicatif */
+    .app-footer {
+      max-width: 1440px;
+      width: 100%;
+      margin: 8px auto 0 auto;
+      padding: 14px 20px;
+      background-color: var(--surface-ivory);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--brown-medium);
+    }
+
+    /* =========================================================
+       MISE EN PAGE STRICTE D'IMPRESSION (@media print)
+       ========================================================= */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 18mm 18mm 20mm 18mm;
+      }
+
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto !important;
+        display: block !important;
+      }
+
+      /* Masquer toute l'interface applicative ainsi que le footer */
+      .app-header,
+      .left-column,
+      .preview-controls,
+      .history-card,
+      .edit-banner,
+      .app-footer,
+      footer {
+        display: none !important;
+      }
+
+      .main-grid,
+      .right-column,
+      .preview-card,
+      .preview-wrapper {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+      }
+
+      .document-sheet {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 6mm 4mm 4mm 4mm !important;
+        min-height: auto !important;
+        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        gap: 18px !important;
+        color: #000000 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      /* En haut à gauche : en-tête de l'administration | En haut à droite : N° d'ordre et date */
+      .doc-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        flex-wrap: nowrap !important;
+        gap: 16px !important;
+        margin-bottom: 6px !important;
+        padding-top: 2mm !important;
+        width: 100% !important;
+      }
+
+      .doc-admin-header {
+        text-align: left !important;
+        flex: 1 1 auto !important;
+        max-width: 58% !important;
+        min-width: 0 !important;
+        font-size: 9pt !important;
+        line-height: 1.3 !important;
+        overflow-wrap: anywhere !important;
+      }
+
+      .doc-meta-right {
+        text-align: right !important;
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        font-size: 9.5pt !important;
+        line-height: 1.4 !important;
+      }
+
+      /* Au centre : le corps de l'autorisation (légèrement descendu) */
+      .doc-center-section {
+        margin: 14px 0 8px 0 !important;
+        width: 100% !important;
+      }
+
+      .doc-title {
+        font-size: 12pt !important;
+        margin: 6px 0 16px 0 !important;
+      }
+
+      .doc-body {
+        outline: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin-bottom: 10px !important;
+        font-size: 10.5pt !important;
+        line-height: 1.55 !important;
+        text-align: justify !important;
+      }
+
+      /* En bas à droite : nom du signataire en gras et souligné */
+      .doc-footer {
+        display: flex !important;
+        justify-content: flex-end !important;
+        width: 100% !important;
+        margin-top: 14px !important;
+        padding-bottom: 2mm !important;
+      }
+
+      .doc-signatory {
+        font-size: 10.5pt !important;
+      }
+
+      .doc-signatory-name {
+        margin-top: 36px !important;
+        font-weight: bold !important;
+        text-decoration: underline !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div>
+      <h1>Gestion des Permissions d'Absence & Congés Administratifs</h1>
+      <p>Répertoire du personnel, contrôle réglementaire des durées et édition des actes administratifs</p>
+    </div>
+    <div>
+      <span id="agentCountBadge" class="badge badge-permission">0 agents enregistrés</span>
+    </div>
+  </header>
+
+  <main class="main-grid container-fluid px-0">
+    <div class="row g-4 mx-0">
+      <!-- COLONNE GAUCHE : RÉPERTOIRE + FORMULAIRE DE DEMANDE -->
+      <section class="left-column col-12 col-xl-6 px-0 px-xl-2">
+
+        <!-- 1. RÉPERTOIRE DES AGENTS -->
+        <div class="card">
+          <div class="card-title">
+            <span class="title-with-icon">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span>1. Répertoire des Agents</span>
+            </span>
+          </div>
+
+          <div class="toolbar">
+            <button type="button" class="btn btn-primary btn-sm" id="btnToggleAddAgent">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Ajouter un agent</span>
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" id="btnToggleDelAgent">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14" />
+              </svg>
+              <span>Supprimer un agent</span>
+            </button>
+          </div>
+
+          <!-- Panneau Ajouter un agent -->
+          <div id="panelAddAgent" class="drawer-panel">
+            <h3>
+              <span class="title-with-icon">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M19 8v6M22 11h-6" />
+                </svg>
+                <span>Nouvel agent dans le répertoire</span>
+              </span>
+            </h3>
+            <div class="row g-3">
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="newMatricule">Matricule de solde (unique) *</label>
+                  <input type="text" id="newMatricule" placeholder="Ex: 614892/A" />
+                </div>
+              </div>
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="newUnite">Unité de service *</label>
+                  <input type="text" id="newUnite" placeholder="Ex: Direction des Ressources Humaines" />
+                </div>
+              </div>
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="newPrenom">Prénom *</label>
+                  <input type="text" id="newPrenom" placeholder="Ex: Aminata" />
+                </div>
+              </div>
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="newNom">Nom *</label>
+                  <input type="text" id="newNom" placeholder="Ex: DIALLO" />
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-accent btn-sm" id="btnSaveAgent">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                <span>Enregistrer l'agent</span>
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" id="btnCancelAddAgent">Fermer</button>
+            </div>
+            <div id="addAgentFeedback" class="status-msg"></div>
+          </div>
+
+          <!-- Panneau Supprimer un agent -->
+          <div id="panelDelAgent" class="drawer-panel">
+            <h3>
+              <span class="title-with-icon">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+                <span>Retirer un agent du répertoire</span>
+              </span>
+            </h3>
+            <div class="row g-3">
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="delAgentSelect">Sélectionner dans la liste</label>
+                  <select id="delAgentSelect">
+                    <option value="">-- Choisir un agent --</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="delMatriculeInput">Ou saisir le matricule exact</label>
+                  <input type="text" id="delMatriculeInput" placeholder="Ex: 614892/A" />
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-danger btn-sm" id="btnConfirmDelAgent">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+                <span>Confirmer la suppression</span>
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" id="btnCancelDelAgent">Fermer</button>
+            </div>
+            <div id="delAgentFeedback" class="status-msg"></div>
+          </div>
+
+          <!-- Liste compacte des agents disponibles -->
+          <div class="table-responsive table-container" style="max-height: 185px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Matricule</th>
+                  <th>Prénom & Nom</th>
+                  <th>Unité de service</th>
+                </tr>
+              </thead>
+              <tbody id="agentsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. FORMULAIRE DE DEMANDE -->
+        <div class="card">
+          <div class="card-title">
+            <span class="title-with-icon">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              <span>2. Saisie de la Demande</span>
+            </span>
+            <span id="requestTypeBadge" class="badge badge-permission">Permission d'absence (≤ 4 jours)</span>
+          </div>
+
+          <form id="requestForm" novalidate>
+            <div class="row g-3">
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="matricule">Numéro de matricule de solde *</label>
+                  <input type="text" id="matricule" list="matriculesDatalist" placeholder="Saisir un matricule..." required />
+                  <datalist id="matriculesDatalist"></datalist>
+                  <span id="lookupStatus" class="status-msg"></span>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="uniteService">Unité de service *</label>
+                  <input type="text" id="uniteService" placeholder="Prérempli ou à saisir" required />
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="prenom">Prénom *</label>
+                  <input type="text" id="prenom" placeholder="Prérempli ou à saisir" required />
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="nom">Nom *</label>
+                  <input type="text" id="nom" placeholder="Prérempli ou à saisir" required />
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="nbJours">Nombre de jours souhaités *</label>
+                  <input type="number" id="nbJours" min="1" max="90" value="2" required />
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="dateSignature">Date de signature *</label>
+                  <input type="date" id="dateSignature" required />
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="dateRetour">Date de retour prévue (calculée)</label>
+                  <input type="date" id="dateRetour" readonly />
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label for="destination">Destination *</label>
+                  <input type="text" id="destination" placeholder="Ex: Saint-Louis, Thiès, Dakar..." required />
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-group">
+                  <label for="motif">Motif de la demande *</label>
+                  <input type="text" id="motif" placeholder="Ex: Raisons familiales / Congé annuel réglementaire" required />
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-group">
+                  <label for="signataire">Signataire habilité *</label>
+                  <input type="text" id="signataire" value="M. Ibrahim SOW, Directeur des Ressources Humaines" required />
+                </div>
+              </div>
+
+              <!-- Champ conditionnel PDF si > 4 jours -->
+              <div class="col-12">
+                <div class="form-group pdf-box" id="pdfRequirementBox">
+                  <label for="titreCongePdf" style="color: var(--danger);">
+                    Titre de congé en cours de validité (format PDF obligatoire pour &gt; 4 jours) *
+                  </label>
+                  <input type="file" id="titreCongePdf" accept="application/pdf,.pdf" class="mt-1" />
+                  <span id="pdfFileStatus" class="status-msg"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 d-flex flex-wrap gap-2">
+              <button type="submit" class="btn btn-primary">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                <span>Valider et enregistrer la demande</span>
+              </button>
+              <button type="button" class="btn btn-outline" id="btnResetForm">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                <span>Réinitialiser le formulaire</span>
+              </button>
+            </div>
+            <div id="formFeedback" class="status-msg mt-2"></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- COLONNE DROITE : APERÇU AVANT IMPRESSION + HISTORIQUE -->
+      <section class="right-column col-12 col-xl-6 px-0 px-xl-2">
+
+        <!-- 3. APERÇU AVANT IMPRESSION -->
+        <div class="card preview-card">
+          <div class="card-title preview-controls">
+            <span class="title-with-icon">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>3. Aperçu avant impression</span>
+            </span>
+            <div class="d-flex flex-wrap gap-1">
+              <button type="button" class="btn btn-outline btn-sm" id="btnToggleEditPreview">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg>
+                <span>Modifier l'aperçu</span>
+              </button>
+              <button type="button" class="btn btn-accent btn-sm" id="btnSaveEditedPreview" style="display: none;">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                <span>Enregistrer dans l'historique</span>
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" id="btnRestorePreview" style="display: none;">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                <span>Rétablir le texte initial</span>
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="btnPrintDoc">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 6 2 18 2 18 9" />
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                <span>Imprimer l'acte</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="editBanner" class="edit-banner" style="display:none; background:#fff3cd; color:#5c3c00; padding:8px 12px; border-radius:6px; font-size:0.84rem; margin-bottom:10px; border:1px solid #e6ccb2;">
+            Mode édition actif : cliquez directement sur le texte de l'autorisation ci-dessous pour le modifier avant impression.
+          </div>
+
+          <div class="preview-wrapper">
+            <article class="document-sheet" id="printableSheet">
+              <!-- Haut gauche : En-tête de l'administration | Haut droite : N° d'ordre et date -->
+              <div class="doc-header">
+                <div class="doc-admin-header" id="docAdminHeader">
+                  RÉPUBLIQUE DU SÉNÉGAL<br />
+                  Un Peuple - Un But - Une Foi<br />
+                  --------------------<br />
+                  MINISTÈRE DE LA FONCTION PUBLIQUE<br />
+                  DIRECTION GÉNÉRALE DE L'ADMINISTRATION<br />
+                  SERVICE DES RESSOURCES HUMAINES
+                </div>
+                <div class="doc-meta-right">
+                  <div><strong>N° <span id="docOrderNumber">001/DGA/SRH</span></strong></div>
+                  <div>Le <span id="docDateTop">--/--/----</span></div>
+                </div>
+              </div>
+
+              <!-- Centre : Corps de l'autorisation -->
+              <div class="doc-center-section">
+                <h2 class="doc-title" id="docMainTitle">AUTORISATION DE PERMISSION D'ABSENCE</h2>
+                <div class="doc-body" id="docBodyText" contenteditable="false"></div>
+              </div>
+
+              <!-- Bas droite : Nom du signataire en gras et souligné -->
+              <div class="doc-footer">
+                <div class="doc-signatory">
+                  <div>Le Signataire habilité,</div>
+                  <div class="doc-signatory-name" id="docSignatoryName">M. Ibrahim SOW, Directeur des Ressources Humaines</div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <!-- 4. HISTORIQUE DES DEMANDES -->
+        <div class="card history-card">
+          <div class="card-title">
+            <span class="title-with-icon">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>4. Historique des demandes (<span id="historyCount">0</span>)</span>
+            </span>
+            <button type="button" class="btn btn-danger btn-sm" id="btnClearHistory">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+              <span>Vider l'historique</span>
+            </button>
+          </div>
+
+          <div class="table-responsive table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>N° Ordre</th>
+                  <th>Agent (Matricule)</th>
+                  <th>Nature & Durée</th>
+                  <th>Signature / Retour</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <footer class="app-footer" id="appFooter">
+    &copy; 2026 - Gestion des Permissions d'absence et Congés administratifs
+  </footer>
+
+  <!-- Bootstrap 5.3 JS Bundle (inclut Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      /* Clés de stockage navigateur */
+      const STORAGE_AGENTS_KEY = "admin_absences_agents_v1";
+      const STORAGE_HISTORY_KEY = "admin_absences_history_v1";
+
+      /* Agents par défaut si le répertoire est vide */
+      const DEFAULT_AGENTS = [
+        { matricule: "601425/A", prenom: "Aminata", nom: "DIALLO", unite: "Direction des Ressources Humaines" },
+        { matricule: "612890/B", prenom: "Moussa", nom: "NDIAYE", unite: "Division Financière et Comptable" },
+        { matricule: "598310/C", prenom: "Fatou", nom: "SALL", unite: "Service du Courrier et des Archives" },
+        { matricule: "624771/D", prenom: "Ousmane", nom: "BA", unite: "Cellule Informatique et Systèmes" }
+      ];
+
+      /* État applicatif */
+      let agents = [];
+      let history = [];
+      let currentRecordId = null;
+      let isEditingPreview = false;
+      let initialGeneratedBody = "";
+
+      /* Références DOM */
+      const el = {
+        agentCountBadge: document.getElementById("agentCountBadge"),
+        btnToggleAddAgent: document.getElementById("btnToggleAddAgent"),
+        btnToggleDelAgent: document.getElementById("btnToggleDelAgent"),
+        panelAddAgent: document.getElementById("panelAddAgent"),
+        panelDelAgent: document.getElementById("panelDelAgent"),
+        newMatricule: document.getElementById("newMatricule"),
+        newUnite: document.getElementById("newUnite"),
+        newPrenom: document.getElementById("newPrenom"),
+        newNom: document.getElementById("newNom"),
+        btnSaveAgent: document.getElementById("btnSaveAgent"),
+        btnCancelAddAgent: document.getElementById("btnCancelAddAgent"),
+        addAgentFeedback: document.getElementById("addAgentFeedback"),
+        delAgentSelect: document.getElementById("delAgentSelect"),
+        delMatriculeInput: document.getElementById("delMatriculeInput"),
+        btnConfirmDelAgent: document.getElementById("btnConfirmDelAgent"),
+        btnCancelDelAgent: document.getElementById("btnCancelDelAgent"),
+        delAgentFeedback: document.getElementById("delAgentFeedback"),
+        agentsTableBody: document.getElementById("agentsTableBody"),
+        matriculesDatalist: document.getElementById("matriculesDatalist"),
+
+        /* Formulaire demande */
+        requestForm: document.getElementById("requestForm"),
+        requestTypeBadge: document.getElementById("requestTypeBadge"),
+        matricule: document.getElementById("matricule"),
+        lookupStatus: document.getElementById("lookupStatus"),
+        prenom: document.getElementById("prenom"),
+        nom: document.getElementById("nom"),
+        uniteService: document.getElementById("uniteService"),
+        nbJours: document.getElementById("nbJours"),
+        dateSignature: document.getElementById("dateSignature"),
+        dateRetour: document.getElementById("dateRetour"),
+        destination: document.getElementById("destination"),
+        motif: document.getElementById("motif"),
+        signataire: document.getElementById("signataire"),
+        pdfRequirementBox: document.getElementById("pdfRequirementBox"),
+        titreCongePdf: document.getElementById("titreCongePdf"),
+        pdfFileStatus: document.getElementById("pdfFileStatus"),
+        btnResetForm: document.getElementById("btnResetForm"),
+        formFeedback: document.getElementById("formFeedback"),
+
+        /* Aperçu & Impression */
+        docOrderNumber: document.getElementById("docOrderNumber"),
+        docDateTop: document.getElementById("docDateTop"),
+        docMainTitle: document.getElementById("docMainTitle"),
+        docBodyText: document.getElementById("docBodyText"),
+        docSignatoryName: document.getElementById("docSignatoryName"),
+        btnToggleEditPreview: document.getElementById("btnToggleEditPreview"),
+        btnSaveEditedPreview: document.getElementById("btnSaveEditedPreview"),
+        btnRestorePreview: document.getElementById("btnRestorePreview"),
+        btnPrintDoc: document.getElementById("btnPrintDoc"),
+        editBanner: document.getElementById("editBanner"),
+
+        /* Historique */
+        historyCount: document.getElementById("historyCount"),
+        historyTableBody: document.getElementById("historyTableBody"),
+        btnClearHistory: document.getElementById("btnClearHistory")
+      };
+
+      /* =========================================================
+         UTILITAIRES DE DATES ET FORMATAGE
+         ========================================================= */
+      function getTodayISO() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, "0");
+        const d = String(now.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+
+      function formatDateFR(isoDate) {
+        if (!isoDate || !isoDate.includes("-")) return "--/--/----";
+        const [y, m, d] = isoDate.split("-");
+        return `${d}/${m}/${y}`;
+      }
+
+      function computeReturnDate(startDateISO, days) {
+        if (!startDateISO || isNaN(days) || days < 1) return "";
+        const [y, m, d] = startDateISO.split("-").map(Number);
+        const date = new Date(y, m - 1, d);
+        date.setDate(date.getDate() + Number(days));
+        const ry = date.getFullYear();
+        const rm = String(date.getMonth() + 1).padStart(2, "0");
+        const rd = String(date.getDate()).padStart(2, "0");
+        return `${ry}-${rm}-${rd}`;
+      }
+
+      function generateOrderNumber() {
+        const year = new Date().getFullYear();
+        const seq = String(history.length + 1).padStart(3, "0");
+        return `${seq}/${year}/DGA/SRH`;
+      }
+
+      function normalizeMatricule(val) {
+        return (val || "").trim().toUpperCase();
+      }
+
+      /* =========================================================
+         1. GESTION DU RÉPERTOIRE DES AGENTS
+         ========================================================= */
+      function loadAgents() {
+        try {
+          const raw = localStorage.getItem(STORAGE_AGENTS_KEY);
+          if (!raw) {
+            agents = [...DEFAULT_AGENTS];
+            saveAgents();
+          } else {
+            const parsed = JSON.parse(raw);
+            agents = Array.isArray(parsed) && parsed.length > 0 ? parsed : [...DEFAULT_AGENTS];
+            if (!Array.isArray(parsed) || parsed.length === 0) saveAgents();
+          }
+        } catch (e) {
+          agents = [...DEFAULT_AGENTS];
+          saveAgents();
+        }
+        renderAgentsUI();
+      }
+
+      function saveAgents() {
+        localStorage.setItem(STORAGE_AGENTS_KEY, JSON.stringify(agents));
+        renderAgentsUI();
+      }
+
+      function renderAgentsUI() {
+        el.agentCountBadge.textContent = `${agents.length} agent${agents.length > 1 ? "s" : ""} enregistré${agents.length > 1 ? "s" : ""}`;
+
+        if (agents.length === 0) {
+          el.agentsTableBody.innerHTML = `<tr><td colspan="3" class="empty-state">Aucun agent dans le répertoire.</td></tr>`;
+        } else {
+          el.agentsTableBody.innerHTML = agents
+            .map(
+              (a) => `
+              <tr>
+                <td><strong>${escapeHtml(a.matricule)}</strong></td>
+                <td>${escapeHtml(a.prenom)} ${escapeHtml(a.nom)}</td>
+                <td>${escapeHtml(a.unite)}</td>
+              </tr>`
+            )
+            .join("");
+        }
+
+        el.matriculesDatalist.innerHTML = agents
+          .map((a) => `<option value="${escapeHtml(a.matricule)}">${escapeHtml(a.prenom)} ${escapeHtml(a.nom)} - ${escapeHtml(a.unite)}</option>`)
+          .join("");
+
+        el.delAgentSelect.innerHTML =
+          `<option value="">-- Choisir un agent --</option>` +
+          agents
+            .map((a) => `<option value="${escapeHtml(a.matricule)}">${escapeHtml(a.matricule)} — ${escapeHtml(a.prenom)} ${escapeHtml(a.nom)}</option>`)
+            .join("");
+      }
+
+      function escapeHtml(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      /* Panneaux Ajout / Suppression */
+      el.btnToggleAddAgent.addEventListener("click", () => {
+        el.panelDelAgent.classList.remove("active");
+        el.panelAddAgent.classList.toggle("active");
+        el.addAgentFeedback.textContent = "";
+      });
+
+      el.btnCancelAddAgent.addEventListener("click", () => {
+        el.panelAddAgent.classList.remove("active");
+      });
+
+      el.btnToggleDelAgent.addEventListener("click", () => {
+        el.panelAddAgent.classList.remove("active");
+        el.panelDelAgent.classList.toggle("active");
+        el.delAgentFeedback.textContent = "";
+      });
+
+      el.btnCancelDelAgent.addEventListener("click", () => {
+        el.panelDelAgent.classList.remove("active");
+      });
+
+      el.btnSaveAgent.addEventListener("click", () => {
+        const matricule = normalizeMatricule(el.newMatricule.value);
+        const prenom = el.newPrenom.value.trim();
+        const nom = el.newNom.value.trim().toUpperCase();
+        const unite = el.newUnite.value.trim();
+
+        if (!matricule || !prenom || !nom || !unite) {
+          el.addAgentFeedback.className = "status-msg status-warn";
+          el.addAgentFeedback.textContent = "Veuillez remplir tous les champs obligatoires.";
+          return;
+        }
+
+        const exists = agents.some((a) => normalizeMatricule(a.matricule) === matricule);
+        if (exists) {
+          el.addAgentFeedback.className = "status-msg status-warn";
+          el.addAgentFeedback.textContent = `Le matricule ${matricule} existe déjà dans le répertoire.`;
+          return;
+        }
+
+        agents.push({ matricule, prenom, nom, unite });
+        saveAgents();
+
+        el.newMatricule.value = "";
+        el.newPrenom.value = "";
+        el.newNom.value = "";
+        el.newUnite.value = "";
+
+        el.addAgentFeedback.className = "status-msg status-ok";
+        el.addAgentFeedback.textContent = `Agent ${prenom} ${nom} (${matricule}) ajouté avec succès.`;
+      });
+
+      el.delAgentSelect.addEventListener("change", () => {
+        if (el.delAgentSelect.value) {
+          el.delMatriculeInput.value = el.delAgentSelect.value;
+        }
+      });
+
+      el.btnConfirmDelAgent.addEventListener("click", () => {
+        const targetMat = normalizeMatricule(el.delMatriculeInput.value || el.delAgentSelect.value);
+        if (!targetMat) {
+          el.delAgentFeedback.className = "status-msg status-warn";
+          el.delAgentFeedback.textContent = "Veuillez sélectionner ou saisir un matricule à supprimer.";
+          return;
+        }
+
+        const idx = agents.findIndex((a) => normalizeMatricule(a.matricule) === targetMat);
+        if (idx === -1) {
+          el.delAgentFeedback.className = "status-msg status-warn";
+          el.delAgentFeedback.textContent = `Aucun agent trouvé avec le matricule ${targetMat}.`;
+          return;
+        }
+
+        const removed = agents.splice(idx, 1)[0];
+        saveAgents();
+        el.delMatriculeInput.value = "";
+        el.delAgentSelect.value = "";
+
+        el.delAgentFeedback.className = "status-msg status-ok";
+        el.delAgentFeedback.textContent = `Agent ${removed.prenom} ${removed.nom} (${removed.matricule}) supprimé.`;
+      });
+
+      /* =========================================================
+         2. IDENTIFICATION AUTOMATIQUE & RÈGLE DES 4 JOURS
+         ========================================================= */
+      el.matricule.addEventListener("input", () => {
+        const query = normalizeMatricule(el.matricule.value);
+        if (!query) {
+          el.lookupStatus.textContent = "";
+          updatePreviewFromForm();
+          return;
+        }
+
+        const found = agents.find((a) => normalizeMatricule(a.matricule) === query);
+        if (found) {
+          el.prenom.value = found.prenom;
+          el.nom.value = found.nom;
+          el.uniteService.value = found.unite;
+          el.lookupStatus.className = "status-msg status-ok";
+          el.lookupStatus.textContent = `Agent identifié : ${found.prenom} ${found.nom}`;
+        } else {
+          el.lookupStatus.className = "status-msg status-warn";
+          el.lookupStatus.textContent = "Matricule non répertorié (saisie manuelle autorisée).";
+        }
+        updatePreviewFromForm();
+      });
+
+      function handleDurationAndDates() {
+        const days = parseInt(el.nbJours.value, 10);
+        const sigDate = el.dateSignature.value;
+        const retDate = computeReturnDate(sigDate, days);
+        el.dateRetour.value = retDate;
+
+        const isConge = !isNaN(days) && days > 4;
+        if (isConge) {
+          el.requestTypeBadge.className = "badge badge-conge";
+          el.requestTypeBadge.textContent = "Congé administratif (> 4 jours)";
+          el.pdfRequirementBox.classList.add("visible");
+          el.titreCongePdf.required = true;
+        } else {
+          el.requestTypeBadge.className = "badge badge-permission";
+          el.requestTypeBadge.textContent = "Permission d'absence (≤ 4 jours)";
+          el.pdfRequirementBox.classList.remove("visible");
+          el.titreCongePdf.required = false;
+        }
+
+        updatePreviewFromForm();
+      }
+
+      el.nbJours.addEventListener("input", handleDurationAndDates);
+      el.dateSignature.addEventListener("change", handleDurationAndDates);
+
+      el.titreCongePdf.addEventListener("change", () => {
+        const file = el.titreCongePdf.files[0];
+        if (!file) {
+          el.pdfFileStatus.textContent = "";
+          return;
+        }
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+          el.pdfFileStatus.className = "status-msg status-warn";
+          el.pdfFileStatus.textContent = "Format invalide : veuillez joindre uniquement un fichier PDF.";
+          el.titreCongePdf.value = "";
+        } else {
+          el.pdfFileStatus.className = "status-msg status-ok";
+          el.pdfFileStatus.textContent = `Fichier joint : ${file.name}`;
+        }
+        updatePreviewFromForm();
+      });
+
+      /* Mise à jour en temps réel de l'aperçu */
+      [el.prenom, el.nom, el.uniteService, el.destination, el.motif, el.signataire].forEach((input) => {
+        input.addEventListener("input", updatePreviewFromForm);
+      });
+
+      function buildAuthorizationText(data) {
+        const isConge = Number(data.nbJours) > 4;
+        const natureActe = isConge ? "un congé administratif" : "une permission d'absence";
+        const jourLabel = Number(data.nbJours) > 1 ? "jours" : "jour";
+        const pdfClause =
+          isConge && data.pdfFileName
+            ? `\nVu le titre de congé en cours de validité joint au dossier (${data.pdfFileName}) ;`
+            : isConge
+            ? `\nVu le titre de congé en cours de validité dûment vérifié ;`
+            : "";
+
+        return `Le Directeur des Ressources Humaines soussigné accorde ${natureActe} de ${data.nbJours || "___"} ${jourLabel} à l'agent ci-après désigné :${pdfClause}
+
+• Prénom et Nom : ${data.prenom || "[Prénom]"} ${(data.nom || "[NOM]").toUpperCase()}
+• Matricule de solde : ${data.matricule || "[Matricule]"}
+• Unité de service : ${data.uniteService || "[Unité de service]"}
+• Destination : ${data.destination || "[Destination]"}
+• Motif : ${data.motif || "[Motif de la demande]"}
+
+La présente autorisation prend effet à compter de sa date de signature, le ${formatDateFR(data.dateSignature)}.
+L'intéressé(e) est tenu(e) de reprendre le service à la date de retour prévue le ${formatDateFR(data.dateRetour)} à 08 heures précises.`;
+      }
+
+      function updatePreviewFromForm() {
+        if (isEditingPreview) return;
+
+        const days = parseInt(el.nbJours.value, 10) || 0;
+        const isConge = days > 4;
+        const pdfFile = el.titreCongePdf.files[0];
+
+        const data = {
+          orderNumber: generateOrderNumber(),
+          matricule: normalizeMatricule(el.matricule.value),
+          prenom: el.prenom.value.trim(),
+          nom: el.nom.value.trim(),
+          uniteService: el.uniteService.value.trim(),
+          nbJours: days,
+          dateSignature: el.dateSignature.value,
+          dateRetour: el.dateRetour.value,
+          destination: el.destination.value.trim(),
+          motif: el.motif.value.trim(),
+          signataire: el.signataire.value.trim(),
+          pdfFileName: pdfFile ? pdfFile.name : ""
+        };
+
+        el.docOrderNumber.textContent = data.orderNumber;
+        el.docDateTop.textContent = formatDateFR(data.dateSignature);
+        el.docMainTitle.textContent = isConge
+          ? "AUTORISATION DE CONGÉ ADMINISTRATIF"
+          : "AUTORISATION DE PERMISSION D'ABSENCE";
+
+        const body = buildAuthorizationText(data);
+        initialGeneratedBody = body;
+        el.docBodyText.textContent = body;
+        el.docSignatoryName.textContent = data.signataire || "Le Signataire habilité";
+      }
+
+      /* =========================================================
+         3. VALIDATION, APERÇU ÉDITABLE & HISTORIQUE
+         ========================================================= */
+      function loadHistory() {
+        try {
+          const raw = localStorage.getItem(STORAGE_HISTORY_KEY);
+          history = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(history)) history = [];
+        } catch (e) {
+          history = [];
+        }
+        renderHistoryUI();
+      }
+
+      function saveHistory() {
+        localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(history));
+        renderHistoryUI();
+      }
+
+      function renderHistoryUI() {
+        el.historyCount.textContent = history.length;
+
+        if (history.length === 0) {
+          el.historyTableBody.innerHTML = `<tr><td colspan="5" class="empty-state">Aucune demande enregistrée dans l'historique.</td></tr>`;
+          return;
+        }
+
+        el.historyTableBody.innerHTML = history
+          .slice()
+          .reverse()
+          .map((item) => {
+            const isConge = Number(item.nbJours) > 4;
+            const badge = isConge
+              ? `<span class="badge badge-conge">Congé (${item.nbJours} j)</span>`
+              : `<span class="badge badge-permission">Permission (${item.nbJours} j)</span>`;
+
+            return `
+              <tr>
+                <td><strong>${escapeHtml(item.orderNumber)}</strong></td>
+                <td>
+                  ${escapeHtml(item.prenom)} ${escapeHtml(item.nom)}<br />
+                  <small style="color:var(--caramel);">${escapeHtml(item.matricule)}</small>
+                </td>
+                <td>
+                  ${badge}
+                  ${item.pdfFileName ? `<br /><small title="${escapeHtml(item.pdfFileName)}">PDF joint</small>` : ""}
+                </td>
+                <td>
+                  <small>Sign. : <strong>${formatDateFR(item.dateSignature)}</strong></small><br />
+                  <small>Retour : <strong>${formatDateFR(item.dateRetour)}</strong></small>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="window.reprintRecord('${item.id}')">
+                    <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="6 9 6 2 18 2 18 9" />
+                      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                      <rect x="6" y="14" width="12" height="8" />
+                    </svg>
+                    <span>Charger / Réimprimer</span>
+                  </button>
+                </td>
+              </tr>`;
+          })
+          .join("");
+      }
+
+      el.requestForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        el.formFeedback.textContent = "";
+
+        const matricule = normalizeMatricule(el.matricule.value);
+        const prenom = el.prenom.value.trim();
+        const nom = el.nom.value.trim().toUpperCase();
+        const uniteService = el.uniteService.value.trim();
+        const nbJours = parseInt(el.nbJours.value, 10);
+        const dateSignature = el.dateSignature.value;
+        const dateRetour = el.dateRetour.value;
+        const destination = el.destination.value.trim();
+        const motif = el.motif.value.trim();
+        const signataire = el.signataire.value.trim();
+        const pdfFile = el.titreCongePdf.files[0];
+
+        if (!matricule || !prenom || !nom || !uniteService || !nbJours || nbJours < 1 || !dateSignature || !destination || !motif || !signataire) {
+          el.formFeedback.className = "status-msg status-warn";
+          el.formFeedback.textContent = "Veuillez renseigner tous les champs obligatoires du formulaire.";
+          return;
+        }
+
+        if (nbJours > 4) {
+          if (!pdfFile) {
+            el.formFeedback.className = "status-msg status-warn";
+            el.formFeedback.textContent = "Pour toute durée supérieure à 4 jours (congé administratif), le titre de congé en PDF est obligatoire.";
+            return;
+          }
+          if (pdfFile.type !== "application/pdf" && !pdfFile.name.toLowerCase().endsWith(".pdf")) {
+            el.formFeedback.className = "status-msg status-warn";
+            el.formFeedback.textContent = "Le fichier joint doit être impérativement au format PDF.";
+            return;
+          }
+        }
+
+        if (isEditingPreview) {
+          setEditMode(false);
+        }
+
+        const orderNumber = generateOrderNumber();
+        const recordData = {
+          id: "REQ_" + Date.now(),
+          orderNumber,
+          matricule,
+          prenom,
+          nom,
+          uniteService,
+          nbJours,
+          dateSignature,
+          dateRetour,
+          destination,
+          motif,
+          signataire,
+          pdfFileName: nbJours > 4 && pdfFile ? pdfFile.name : "",
+          initialBodyText: "",
+          customBodyText: ""
+        };
+
+        const generatedText = buildAuthorizationText(recordData);
+        recordData.initialBodyText = generatedText;
+        recordData.customBodyText = generatedText;
+
+        history.push(recordData);
+        currentRecordId = recordData.id;
+        saveHistory();
+
+        displayRecordInPreview(recordData);
+
+        el.formFeedback.className = "status-msg status-ok";
+        el.formFeedback.textContent = `Demande enregistrée sous le N° ${orderNumber} (Signature : ${formatDateFR(dateSignature)}, Retour : ${formatDateFR(dateRetour)}).`;
+      });
+
+      function displayRecordInPreview(record) {
+        currentRecordId = record.id;
+        const isConge = Number(record.nbJours) > 4;
+        el.docOrderNumber.textContent = record.orderNumber;
+        el.docDateTop.textContent = formatDateFR(record.dateSignature);
+        el.docMainTitle.textContent = isConge
+          ? "AUTORISATION DE CONGÉ ADMINISTRATIF"
+          : "AUTORISATION DE PERMISSION D'ABSENCE";
+
+        initialGeneratedBody = record.initialBodyText || buildAuthorizationText(record);
+        el.docBodyText.textContent = record.customBodyText || initialGeneratedBody;
+        el.docSignatoryName.textContent = record.signataire;
+      }
+
+      window.reprintRecord = function (id) {
+        const record = history.find((item) => item.id === id);
+        if (!record) return;
+
+        if (isEditingPreview) {
+          setEditMode(false);
+        }
+
+        displayRecordInPreview(record);
+        el.formFeedback.className = "status-msg status-ok";
+        el.formFeedback.textContent = `Acte N° ${record.orderNumber} chargé dans l'aperçu. Vous pouvez le modifier ou l'imprimer.`;
+        document.querySelector(".preview-card").scrollIntoView({ behavior: "smooth" });
+      };
+
+      function setEditMode(enable) {
+        isEditingPreview = enable;
+        el.docBodyText.contentEditable = enable ? "true" : "false";
+        el.docBodyText.classList.toggle("editing", enable);
+        el.editBanner.style.display = enable ? "block" : "none";
+
+        el.btnToggleEditPreview.innerHTML = enable
+          ? `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span>Quitter l'édition</span>`
+          : `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg><span>Modifier l'aperçu</span>`;
+
+        el.btnSaveEditedPreview.style.display = enable ? "inline-flex" : "none";
+        el.btnRestorePreview.style.display = enable ? "inline-flex" : "none";
+
+        if (enable) {
+          el.docBodyText.focus();
+        }
+      }
+
+      el.btnToggleEditPreview.addEventListener("click", () => {
+        setEditMode(!isEditingPreview);
+      });
+
+      el.btnSaveEditedPreview.addEventListener("click", () => {
+        const editedText = el.docBodyText.innerText.trim();
+        if (currentRecordId) {
+          const idx = history.findIndex((item) => item.id === currentRecordId);
+          if (idx !== -1) {
+            history[idx].customBodyText = editedText;
+            saveHistory();
+            el.formFeedback.className = "status-msg status-ok";
+            el.formFeedback.textContent = `Modifications de l'acte N° ${history[idx].orderNumber} enregistrées dans l'historique.`;
+          }
+        } else {
+          el.formFeedback.className = "status-msg status-warn";
+          el.formFeedback.textContent = "Texte modifié pour l'impression (validez le formulaire pour archiver dans l'historique).";
+        }
+        setEditMode(false);
+      });
+
+      el.btnRestorePreview.addEventListener("click", () => {
+        el.docBodyText.textContent = initialGeneratedBody;
+        if (currentRecordId) {
+          const idx = history.findIndex((item) => item.id === currentRecordId);
+          if (idx !== -1) {
+            history[idx].customBodyText = initialGeneratedBody;
+            saveHistory();
+          }
+        }
+        el.formFeedback.className = "status-msg status-ok";
+        el.formFeedback.textContent = "Le texte initial de l'autorisation a été rétabli.";
+      });
+
+      el.btnPrintDoc.addEventListener("click", () => {
+        if (isEditingPreview) {
+          setEditMode(false);
+        }
+        window.print();
+      });
+
+      el.btnClearHistory.addEventListener("click", () => {
+        if (history.length === 0) return;
+        history = [];
+        currentRecordId = null;
+        saveHistory();
+        updatePreviewFromForm();
+        el.formFeedback.className = "status-msg status-ok";
+        el.formFeedback.textContent = "L'historique des demandes a été vidé.";
+      });
+
+      el.btnResetForm.addEventListener("click", () => {
+        el.requestForm.reset();
+        el.dateSignature.value = getTodayISO();
+        el.lookupStatus.textContent = "";
+        el.pdfFileStatus.textContent = "";
+        el.formFeedback.textContent = "";
+        currentRecordId = null;
+        if (isEditingPreview) setEditMode(false);
+        handleDurationAndDates();
+      });
+
+      function init() {
+        el.dateSignature.value = getTodayISO();
+        loadAgents();
+        loadHistory();
+        handleDurationAndDates();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
